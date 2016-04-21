@@ -9,40 +9,27 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using FssValidator;
+using static FssValidator.Settings;
 
 namespace FssValidator
 {
     class Program
     {
-
-        static void Main(string[] args)
+        static void Main(string[] arg)
         {
-            var fssTemplates = Directory.GetFiles(Settings.TemplatesDirection);
-            foreach (var template in fssTemplates)
+            try
             {
-                try
+                if (arg.First() != "")
                 {
-
-                    var xmlTemplate = XDocument.Load(template);
-                    ControlsValidator.ParseControls(xmlTemplate);
-
-                    #region
-
-                    //DictionariesValidator.ParseDic(xmlTemplate);
-                    //foreach (var dictionary in DictionariesValidator.CheckDictionaries(xmlTemplate))
-                    //{
-                    //    Console.WriteLine(dictionary);
-                    //}
-
-                    #endregion
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Произошло непредвиденное исключение в файле {0}", template);
-                    throw;
+                    Template = XDocument.Load(arg.First());
+                    ControlsValidator.ParseControls(Template);
                 }
             }
-
+            catch (Exception)
+            {
+                Console.WriteLine("Произошло непредвиденное исключение");
+                throw;
+            }
         }
     }
 }

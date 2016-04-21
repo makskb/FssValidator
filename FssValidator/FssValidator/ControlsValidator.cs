@@ -30,30 +30,29 @@ namespace FssValidator
                 var condition = control.Attribute("condition").Value;
                 if (condition != "")
                 {
-                    Console.WriteLine(ParseConditionAndRule(condition));
+                    var s = ParseConditionAndRule(condition);
                 }
+                
             }
         }
 
-        protected static List<int[]> ParseConditionAndRule(string condition)
+        protected static List<IEnumerable<int?>> ParseConditionAndRule(string ruleOrCondition)
         {
+            //честно скопировал со stackOverflow, но разобрался http://stackoverflow.com/questions/36675434/how-to-correctly-divide-liststring
             char[] separator = new[] {'[', ']'};
-            string[] parseString = condition.Split(separator);
-            List<int[]> numberSections = new List<int[]>();
-
-            foreach (var str in parseString)
+            var result = ruleOrCondition
+                .Split(separator)
+                .Select(x => x.Split(',')) // получаем лист листов(разделителем является ',')
+                .Select(x => x.Select(y =>
             {
-                int i;
-                string sectionsList;
-                string rowList;
-                string cellList;
-                if (int.TryParse(str.Substring(0, 1), out i));
-                {
-                    sectionsList = str;
-                }
-
-            }
-            return numberSections;
+                int value;
+                var isInt = int.TryParse(y, out value);
+                if (isInt) return value;
+                else return null as int?; 
+            }))//выбираем intы
+                .Where(x=>x.All(y=>y.HasValue))//выбираем листы с intами
+                .ToList();
+            return result;
         }
 
 
