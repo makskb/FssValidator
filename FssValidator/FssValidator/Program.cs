@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Xml.Linq;
+using static RosstatValidator.Settings;
 
 namespace RosstatValidator
 {
@@ -12,17 +13,23 @@ namespace RosstatValidator
             {
                 if (arg.First() != "")
                 {
-                    Settings.Template = XDocument.Load(arg.First());
+                    Template = XDocument.Load(arg.First());
                     LogEvent.Write("успешно загрузили файл " + arg.First());
-                    //инициализируем список номеров разделов
                     var str = new TemplateStructure();
-                    Settings.SectionsList = str.ReadStructure(Settings.Template);
+                    SectionsList = str.ReadStructure(Template);
+                    ControlsValidator.ParseControls(Template);
                 }
             }
             catch (Exception)
             {
                 Console.WriteLine("Произошло непредвиденное исключение");
                 throw;
+            }
+
+            finally
+            {
+                LogEvent.Write("Well done");
+                Console.WriteLine("Well done");
             }
         }
     }

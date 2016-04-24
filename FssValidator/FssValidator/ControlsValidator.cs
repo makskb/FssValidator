@@ -18,10 +18,19 @@ namespace RosstatValidator
         public static void ParseControls(XDocument template)
         {
             var controlsList = Template.Root.Element("controls").Elements("control");
-
+            LogEvent.Write("Начинаем валидацию контролей");
             foreach (var control in controlsList)
             {
-                var condition = control.Attribute("condition").Value;
+                LogEvent.Write("Валидируем контроль с id=" + control.Attribute("id").Value);
+                var parseCondition = ParseConditionAndRule(control.Attribute("condition").Value);
+                for (int i = 0; i < 4; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            parseCondition.ElementAt(0).
+                    }
+                }
             }
         }
 

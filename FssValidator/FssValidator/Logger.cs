@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RosstatValidator
@@ -18,8 +19,9 @@ namespace RosstatValidator
 
         private static void Record(string str)
         {
+            DateTime time = DateTime.Now;
             StreamWriter file = new StreamWriter("log.txt", true, Encoding.Default);
-            file.WriteLine(str);
+            file.WriteLine(time + " " + str);
             file.Close();
         }
 

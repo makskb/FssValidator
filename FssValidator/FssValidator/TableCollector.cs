@@ -30,6 +30,7 @@ namespace RosstatValidator
 
         public List<Section> ReadStructure(XDocument xml)
         {
+            LogEvent.Write("Начинаем читать структуру нумерации разделов шаблона");
             List<Section> sections = new List<Section>();
             //просто получили все номера секции
             var allNumberSections =
@@ -47,6 +48,7 @@ namespace RosstatValidator
                 //добавляем в коллекцию
                 sections.Add(section);
             }
+            LogEvent.Write("Успешно записали номера sections");
             //для каждой секции записываем список row
             foreach (var section in sections)
             {
@@ -73,7 +75,7 @@ namespace RosstatValidator
                 //добавляем list<row> в коллекцию
                 section.Rows = listRow;
             }
-
+            LogEvent.Write("Успешно записали номера rows");
             foreach (var section in sections)
             {
                 foreach (var row in section.Rows)
@@ -105,6 +107,8 @@ namespace RosstatValidator
                     row.Cells = listCells;
                 }
             }
+            LogEvent.Write("Успешно записали номера cells");
+            LogEvent.Write("Закончили получение структуры нумераций");
             return sections;
         }
     }
