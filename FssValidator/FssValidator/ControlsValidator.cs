@@ -8,39 +8,28 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using static RosstatValidator.Settings;
 
-namespace FssValidator
+namespace RosstatValidator
 
 {
     class ControlsValidator
     {
-        public XElement ControlsList(XDocument template)
-        {
-            var controls = template.Root.Element("controls");
-            return controls;
-        }
-
         public static void ParseControls(XDocument template)
         {
-            var controlsList = new ControlsValidator().ControlsList(template).Elements("control");
+            var controlsList = Template.Root.Element("controls").Elements("control");
 
             foreach (var control in controlsList)
             {
-                //Console.WriteLine("Валидируем контроль с id={0}", control.Attribute("id").Value);
                 var condition = control.Attribute("condition").Value;
-                if (condition != "")
-                {
-                    var s = ParseConditionAndRule(condition);
-                }
-                
             }
         }
 
+        //метод для парсинга значений аттрибутов condition и rule
         protected static List<IEnumerable<int?>> ParseConditionAndRule(string ruleOrCondition)
         {
-            //честно скопировал со stackOverflow, но разобрался http://stackoverflow.com/questions/36675434/how-to-correctly-divide-liststring
             char[] separator = new[] {'[', ']'};
-            var result = ruleOrCondition
+            return ruleOrCondition
                 .Split(separator)
                 .Select(x => x.Split(',')) // получаем лист листов(разделителем является ',')
                 .Select(x => x.Select(y =>
@@ -52,10 +41,6 @@ namespace FssValidator
             }))//выбираем intы
                 .Where(x=>x.All(y=>y.HasValue))//выбираем листы с intами
                 .ToList();
-            return result;
         }
-
-
-
     }
 }

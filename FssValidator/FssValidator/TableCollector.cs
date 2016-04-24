@@ -5,54 +5,108 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using static FssValidator.Settings;
+using static RosstatValidator.Settings;
 
-namespace FssValidator
+namespace RosstatValidator
 {
-    //тут будем собирать свойства каждой таблицы
-    public class Section
+    public class TemplateStructure
     {
-        public int Number { get; set; }
-        public List<string> Rows { get; set; }
-        public List<string> Cell { get; set; } 
-        /*public static List<int> Table
+        public class Section
         {
-            get { return Template.Root?.Element("sections")?.Elements("section").Attributes("code").Select(x =>
-            {
-                int i;
-                int.TryParse(x.Value, out i);
-                return i;
-            }).ToList(); }
-        }*/
-    }
+            public int NumberSection { get; set; }
+            public List<Row> Rows { get; set; }
+        }
 
-    internal class GetProperties
-    {
-        public static List<Section> PropertiesSections()
+        public class Row
         {
-            var section = new Section();
-            var allNumberSections = Template.Root?.Element("sections")?.Elements("section").Attributes("code").Select(x =>
-            {
-                int i;
-                int.TryParse(x.Value, out i);
-                return i;
-            }).ToList();
+            public int NumberRow { get; set; }
+            public List<Cell> Cells { get; set; }
+        }
+
+        public class Cell
+        {
+            public int NumberCell { get; set; }
+        }
+
+        public List<Section> ReadStructure(XDocument xml)
+        {
+            List<Section> sections = new List<Section>();
+            //просто получили все номера секции
+            var allNumberSections =
+                xml.Root.Element("sections").Elements("section").Attributes("code").Select(x =>
+                {
+                    int i;
+                    int.TryParse(x.Value, out i);
+                    return i;
+                }).ToList();
             foreach (var numSection in allNumberSections)
             {
-                section.Number = numSection;
-                /*section.Rows =
-                    Template.Root.Elements("sections")
-                        .Elements("section")
+                var section = new Section();
+                //записываем номер секции
+                section.NumberSection = numSection;
+                //добавляем в коллекцию
+                sections.Add(section);
+            }
+            //для каждой секции записываем список row
+            foreach (var section in sections)
+            {
+                var listRow = new List<Row>();
+                //получаем список row в конкретной секции
+                var currentRow = xml.Root.Elements("sections").Elements("section")
+                    .Where(x =>
+                    {
+                        int i;
+                        int.TryParse(x.Attribute("code").Value, out i);
+                        return i == section.NumberSection;
+                    }).Elements("rows").Elements("row").Select(y =>
+                    {
+                        int i;
+                        int.TryParse(y.Attribute("code").Value, out i);
+                        return i;
+                    }).ToList();
+                //на каждую row создаем объект, записываем номер и добавляем в list
+                foreach (var i in currentRow)
+                {
+                    var row = new Row {NumberRow = i};
+                    listRow.Add(row);
+                }
+                //добавляем list<row> в коллекцию
+                section.Rows = listRow;
+            }
+
+            foreach (var section in sections)
+            {
+                foreach (var row in section.Rows)
+                {
+                    var listCells = new List<Cell>();
+                    var currentCells = xml.Root.Elements("sections").Elements("section")
                         .Where(x =>
                         {
                             int i;
-                            var t = x.Attribute("code").Value;
-                            int.TryParse(t, out i);
-                            if (i == numSection)
-                                return true;
-                            return false;
-                        });*/
+                            int.TryParse(x.Attribute("code").Value, out i);
+                            return i == section.NumberSection;
+                        }).Elements("rows").Elements("row").Where(z =>
+                        {
+                            int i;
+                            int.TryParse(z.Attribute("code").Value, out i);
+                            return i == row.NumberRow;
+                        }).Elements("cell").Select(y =>
+                        {
+                            int i = 0;
+                            int.TryParse(y.Attribute("column").Value, out i);
+                            return i;
+                        }).ToList();
+                    foreach (var currentCell in currentCells)
+                    {
+                        var cell = new Cell();
+                        cell.NumberCell = currentCell;
+                        listCells.Add(cell);
+                    }
+                    row.Cells = listCells;
+                }
             }
+            return sections;
         }
     }
-} 
+}
+    
