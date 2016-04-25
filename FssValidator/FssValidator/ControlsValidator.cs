@@ -23,13 +23,20 @@ namespace RosstatValidator
             {
                 LogEvent.Write("Валидируем контроль с id=" + control.Attribute("id").Value);
                 var parseCondition = ParseConditionAndRule(control.Attribute("condition").Value);
-                for (int i = 0; i < 4; i++)
+                if (parseCondition.Count != 0)
                 {
-                    switch (i)
-                    {
-                        case 0:
-                            parseCondition.ElementAt(0).
-                    }
+                    //получаем номер секции текущего condition
+                    var numberSection = parseCondition[0].Select(x => x.Value).FirstOrDefault();
+                    //получаем структуру секции с текущим номером и работаем уже только с ней
+                    var currentSection = SectionsList.Where(x => x.NumberSection == numberSection).ToList();
+                    if (currentSection.Count == 0)
+                        LogEvent.Write("ERROR! Номера секции " + numberSection + " не существует");
+                    var numberRows = currentSection.Select(x => x.Rows);
+                    
+
+
+
+
                 }
             }
         }
@@ -37,7 +44,7 @@ namespace RosstatValidator
         //метод для парсинга значений аттрибутов condition и rule
         protected static List<IEnumerable<int?>> ParseConditionAndRule(string ruleOrCondition)
         {
-            char[] separator = new[] {'[', ']'};
+            var separator = new[] {'[', ']'};
             return ruleOrCondition
                 .Split(separator)
                 .Select(x => x.Split(',')) // получаем лист листов(разделителем является ',')
