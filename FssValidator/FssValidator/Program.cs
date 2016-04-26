@@ -18,6 +18,7 @@ namespace RosstatValidator
                     var str = new TemplateStructure();
                     SectionsList = str.ReadStructure(Template);
                     ControlsValidator.ParseControls(Template);
+                    DictionariesValidator.CheckDictionaries(Template);
                 }
             }
             catch (Exception)
@@ -29,7 +30,6 @@ namespace RosstatValidator
             finally
             {
                 LogEvent.Write("Well done");
-                Console.WriteLine("Well done");
             }
         }
     }

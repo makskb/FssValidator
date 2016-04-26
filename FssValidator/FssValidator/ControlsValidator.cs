@@ -70,18 +70,37 @@ namespace RosstatValidator
         protected static List<IEnumerable<int?>> ParseConditionAndRule(string ruleOrCondition)
         {
             var separator = new[] {'[', ']'};
-            return ruleOrCondition
-                .Split(separator)
-                .Select(x => x.Split(',')) // получаем лист листов(разделителем является ',')
-                .Select(x => x.Select(y =>
+            var s =  ruleOrCondition.Split(separator).Select(x =>
             {
-                int value;
-                var isInt = int.TryParse(y, out value);
-                if (isInt) return value;
-                else return null as int?; 
-            }))//выбираем intы
-                .Where(x=>x.All(y=>y.HasValue))//выбираем листы с intами
+                if (x.Contains('-'))
+                    return Dash(x); //хочу, чтобы он дописывал перечисления типа 15-18 в 15,16,17,18, но пока не работает. Разбираюсь
+                return x;
+            }).Select(x => x.Split(',')) // получаем лист листов(разделителем является ',')
+                .Select(x => x.Select(y =>
+                {
+                    int value;
+                    var isInt = int.TryParse(y, out value);
+                    if (isInt) return value;
+                    else return null as int?;
+                }))//выбираем intы
+                .Where(x => x.All(y => y.HasValue))//выбираем листы с intами
                 .ToList();
+            return s;
+        }
+
+        public static string Dash(string str)
+        {
+            var list = str.Split('-').ToList();
+            int valLeft;
+            int.TryParse(list[0], out valLeft);
+            int valRigth;
+            int.TryParse(list[1], out valRigth);
+            string result = null;
+            for (int i = valLeft; i < valRigth+1; i++)
+                result += i + ",";
+            return result;
+
+
         }
     }
 }
