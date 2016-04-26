@@ -23,20 +23,45 @@ namespace RosstatValidator
             {
                 LogEvent.Write("Валидируем контроль с id=" + control.Attribute("id").Value);
                 var parseCondition = ParseConditionAndRule(control.Attribute("condition").Value);
+                var parseRule = ParseConditionAndRule(control.Attribute("rule").Value);
+                //валидируем condition
                 if (parseCondition.Count != 0)
+                    Comparator(parseCondition);
+                //валидируем rule
+                if (parseRule.Count != 0)
+                    Comparator(parseRule);
+            }
+        }
+
+        //метод сравнивает список перечислений int с sections, rows, cells
+        public static void Comparator(List<IEnumerable<int?>> parseCondition)
+        {
+            //получаем номер секции текущего condition
+            var numberSectioninControl = parseCondition[0].Select(x => x.Value).FirstOrDefault();
+            //получаем структуру секции с текущим номером и работаем уже только с ней
+            var currentSection = SectionsList.Where(x => x.NumberSection == numberSectioninControl).FirstOrDefault();
+            if (currentSection == null)
+            {
+                LogEvent.Write("ERROR! Номера секции " + numberSectioninControl + " не существует");
+            }
+            else // если секция существует, то продолжаем проверять row в ней
+            {
+                var numberRowsInControl = parseCondition[1].Select(x => x.Value).ToList();
+                foreach (var row in numberRowsInControl)
                 {
-                    //получаем номер секции текущего condition
-                    var numberSection = parseCondition[0].Select(x => x.Value).FirstOrDefault();
-                    //получаем структуру секции с текущим номером и работаем уже только с ней
-                    var currentSection = SectionsList.Where(x => x.NumberSection == numberSection).ToList();
-                    if (currentSection.Count == 0)
-                        LogEvent.Write("ERROR! Номера секции " + numberSection + " не существует");
-                    var numberRows = currentSection.Select(x => x.Rows);
-                    
-
-
-
-
+                    var currentRow = currentSection.Rows.Where(x => x.NumberRow == row).FirstOrDefault();
+                    if (currentRow == null)
+                    {
+                        LogEvent.Write("ERROR! Номера row " + row + " не существует в секции №" + currentSection.NumberSection);
+                    } // если row существует, то проверяем cells в ней
+                    else
+                    {
+                        var numberCellsInControl = parseCondition[2].Select(x => x.Value).ToList();
+                        foreach (var cell in numberCellsInControl.Where(cell => !currentRow.Cells.Select(x => x.NumberCell).ToList().Contains(cell)))
+                        {
+                            LogEvent.Write("ERROR! Номера cell " + cell + " не существует в row №" + currentRow.NumberRow + " в секции №" + currentSection.NumberSection);
+                        }
+                    }
                 }
             }
         }
