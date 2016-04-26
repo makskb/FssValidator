@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using static RosstatValidator.TemplateStructure;
 
-namespace FssValidator
+namespace RosstatValidator
 {
-    class Settings
+    public class Settings
     {
+        public static XDocument Template = new XDocument();
+        public static List<Section> SectionsList = new List<Section>();
         public static string TemplatesDirection = @"../../templates";
+        public static LogEvent LogEvent { get; set; }
     }
 }
