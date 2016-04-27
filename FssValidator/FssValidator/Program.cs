@@ -26,7 +26,6 @@ namespace RosstatValidator
                 Console.WriteLine("Произошло непредвиденное исключение");
                 throw;
             }
-
             finally
             {
                 LogEvent.Write("Well done");

@@ -73,7 +73,7 @@ namespace RosstatValidator
             var s =  ruleOrCondition.Split(separator).Select(x =>
             {
                 if (x.Contains('-'))
-                    return Dash(x); //хочу, чтобы он дописывал перечисления типа 15-18 в 15,16,17,18, но пока не работает. Разбираюсь
+                    return Dash(x); //дописываем перечисления, если строка содержит -
                 return x;
             }).Select(x => x.Split(',')) // получаем лист листов(разделителем является ',')
                 .Select(x => x.Select(y =>
@@ -88,19 +88,31 @@ namespace RosstatValidator
             return s;
         }
 
+        //метод получает на вход строку типа 15,20-23,65 и выдает 15,20,21,22,23,65
         public static string Dash(string str)
         {
-            var list = str.Split('-').ToList();
-            int valLeft;
-            int.TryParse(list[0], out valLeft);
-            int valRigth;
-            int.TryParse(list[1], out valRigth);
-            string result = null;
-            for (int i = valLeft; i < valRigth+1; i++)
-                result += i + ",";
-            return result;
-
-
+            var listAll = str.Split(',').ToList();
+            var listWithDash = listAll.Where(x => x.Contains('-')).ToList();//отделяем строки, содержащие -
+            var listWhithoutDash = listAll.Where(x=>!x.Contains('-')).ToList().Select(x=>x + ",").ToList(); //строки, не содержащие -
+            var listResult = new List<string>();
+            //каждую строку с '-' обрабатываем, и записываем в итоговый лист
+            foreach (var list in listWithDash)
+            {
+                var s = list.Split('-');
+                int valLeft;
+                int.TryParse(s[0], out valLeft);
+                int valRigth;
+                int.TryParse(s[1], out valRigth);
+                string result = null;
+                for (int i = valLeft; i < valRigth + 1; i++)
+                    result += i + ",";
+                listResult.Add(result);
+            }
+            //объединяем все значения
+            listResult.AddRange(listWhithoutDash);
+            //записываем все значения в строку
+            string resultStr = listResult.Aggregate<string, string>(null, (current, s) => current + s);
+            return resultStr.Substring(0, resultStr.Length - 1); // удаляем последнюю ',' и возвращяем значение
         }
     }
 }
