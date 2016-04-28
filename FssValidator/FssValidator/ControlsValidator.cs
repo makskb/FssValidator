@@ -22,14 +22,23 @@ namespace RosstatValidator
             foreach (var control in controlsList)
             {
                 LogEvent.Write("Валидируем контроль с id=" + control.Attribute("id").Value);
-                var parseCondition = ParseConditionAndRule(control.Attribute("condition").Value);
-                var parseRule = ParseConditionAndRule(control.Attribute("rule").Value);
-                //валидируем condition
-                if (parseCondition.Count != 0)
-                    Comparator(parseCondition);
-                //валидируем rule
-                if (parseRule.Count != 0)
-                    Comparator(parseRule);
+                var currentRule = control.Attribute("condition").Value;
+                if (currentRule.Trim() != "")
+                {
+                    var conditionCollector = currentRule.Split(new char[] { '{', '}' });
+                    foreach (var s in conditionCollector)
+                    {
+                        try
+                        {
+                            Comparator(ParseConditionAndRule(s));
+                        }
+                        catch (Exception)
+                        {
+                            //LogEvent.Write("Попытка обработки строки '" + s + "' закончилась неудачей");
+                            continue;
+                        }
+                    }
+                }
             }
         }
 

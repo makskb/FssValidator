@@ -10,8 +10,6 @@ namespace RosstatValidator
 {
     public class LogEvent
     {
-        
-
         public static void Write(string s)
         {
             Record(s);
