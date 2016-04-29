@@ -30,14 +30,14 @@ namespace Validator.Tests
                     Rows =
                         new List<Row>()
                         {
-                            new Row {NumberRow = 0, Cells = new List<Cell>() {}},
-                            new Row {NumberRow = 1, Cells = new List<Cell>() {new Cell() {NumberCell = 3}}},
+                            new Row {NumberRow = 0, Cells = new List<Col>() {}},
+                            new Row {NumberRow = 1, Cells = new List<Col>() {new Col() {NumberCell = 3}}},
                             new Row
                             {
                                 NumberRow = 2,
-                                Cells = new List<Cell>() {new Cell() {NumberCell = 3}, new Cell() {NumberCell = 4}, new Cell() {NumberCell = 5}, new Cell() {NumberCell = 6}, new Cell() {NumberCell = 0}, new Cell() {NumberCell = 1561616161 } }
+                                Cells = new List<Col>() {new Col() {NumberCell = 3}, new Col() {NumberCell = 4}, new Col() {NumberCell = 5}, new Col() {NumberCell = 6}, new Col() {NumberCell = 0}, new Col() {NumberCell = 1561616161 } }
                             },
-                            new Row {NumberRow = 3, Cells = new List<Cell>() {new Cell() {NumberCell = 3}}}
+                            new Row {NumberRow = 3, Cells = new List<Col>() {new Col() {NumberCell = 3}}}
                         }
                 },
                 new Section()
@@ -46,10 +46,10 @@ namespace Validator.Tests
                     Rows =
                         new List<Row>()
                         {
-                            new Row {NumberRow = 0, Cells = new List<Cell> {}},
-                            new Row {NumberRow = 0, Cells = new List<Cell> {}},
-                            new Row {NumberRow = 30, Cells = new List<Cell> {new Cell() {NumberCell = 3}, new Cell {NumberCell = 4}}},
-                            new Row {NumberRow = 31, Cells = new List<Cell> {new Cell() {NumberCell = 3}, new Cell {NumberCell = 4}}}
+                            new Row {NumberRow = 0, Cells = new List<Col> {}},
+                            new Row {NumberRow = 0, Cells = new List<Col> {}},
+                            new Row {NumberRow = 30, Cells = new List<Col> {new Col() {NumberCell = 3}, new Col {NumberCell = 4}}},
+                            new Row {NumberRow = 31, Cells = new List<Col> {new Col() {NumberCell = 3}, new Col {NumberCell = 4}}}
                         }
                 }
                 #endregion

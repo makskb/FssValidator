@@ -20,10 +20,10 @@ namespace RosstatValidator
         public class Row
         {
             public int NumberRow { get; set; }
-            public List<Cell> Cells { get; set; }
+            public List<Col> Cells { get; set; }
         }
 
-        public class Cell
+        public class Col
         {
             public int NumberCell { get; set; }
         }
@@ -32,7 +32,7 @@ namespace RosstatValidator
         {
             LogEvent.Write("Начинаем читать структуру нумерации разделов шаблона");
             List<Section> sections = new List<Section>();
-            //просто получили все номера секции
+            //получили все номера секции
             var allNumberSections =
                 xml.Root.Element("sections").Elements("section").Attributes("code").Select(x =>
                 {
@@ -69,8 +69,12 @@ namespace RosstatValidator
                 //на каждую row создаем объект, записываем номер и добавляем в list
                 foreach (var i in currentRow)
                 {
-                    var row = new Row {NumberRow = i};
-                    listRow.Add(row);
+                    if (i != 0)
+                    {
+                        var row = new Row { NumberRow = i };
+                        listRow.Add(row);
+                    }
+                    
                 }
                 //добавляем list<row> в коллекцию
                 section.Rows = listRow;
@@ -78,31 +82,30 @@ namespace RosstatValidator
             LogEvent.Write("Успешно записали номера rows");
             foreach (var section in sections)
             {
+                var currentDefaultCell = xml.Root.Elements("sections").Elements("section")
+                    .Where(x => x.Attribute("code").Value.ToInt() == section.NumberSection)
+                    .Elements("columns")
+                    .Elements("column")
+                    .Elements("default-cell")
+                    .Where(x=>x.Attribute("inputType").Value.ToInt() != 0).Select(x=>x.Attribute("column").Value)
+                    .ToList();
                 foreach (var row in section.Rows)
                 {
-                    var listCells = new List<Cell>();
-                    var currentCells = xml.Root.Elements("sections").Elements("section")
-                        .Where(x =>
-                        {
-                            int i;
-                            int.TryParse(x.Attribute("code").Value, out i);
-                            return i == section.NumberSection;
-                        }).Elements("rows").Elements("row").Where(z =>
-                        {
-                            int i;
-                            int.TryParse(z.Attribute("code").Value, out i);
-                            return i == row.NumberRow;
-                        }).Elements("cell").Select(y =>
-                        {
-                            int i = 0;
-                            int.TryParse(y.Attribute("column").Value, out i);
-                            return i;
-                        }).ToList();
-                    foreach (var currentCell in currentCells)
+                    var listCells = new List<Col>();
+                    var currentForbiddenCells = xml.Root.Elements("sections").Elements("section")
+                        .Where(x => x.Attribute("code").Value.ToInt() == section.NumberSection)
+                        .Elements("rows").Elements("row").Where(z => z.Attribute("code").Value.ToInt() == row.NumberRow)
+                        .Elements("cell").Where(b=>b.Attribute("inputType").Value.ToInt() == 0).Select(y => y.Attribute("column").Value)
+                        .ToList();
+                    
+                    foreach (var str in currentDefaultCell)
                     {
-                        var cell = new Cell();
-                        cell.NumberCell = currentCell;
-                        listCells.Add(cell);
+                        var currentCell = new Col();
+                        if (!currentForbiddenCells.Contains(str) && str.ToInt() != 0)
+                        {
+                            currentCell.NumberCell = str.ToInt();
+                            listCells.Add(currentCell);
+                        }
                     }
                     row.Cells = listCells;
                 }
@@ -110,6 +113,16 @@ namespace RosstatValidator
             LogEvent.Write("Успешно записали номера cells");
             LogEvent.Write("Закончили получение структуры нумераций");
             return sections;
+        }
+    }
+
+    public static class MyExtentions
+    {
+        public static int ToInt(this string str)
+        {
+            int i = 0;
+            int.TryParse(str, out i);
+            return i;
         }
     }
 }

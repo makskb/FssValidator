@@ -30,7 +30,9 @@ namespace RosstatValidator
                     {
                         try
                         {
-                            Comparator(ParseConditionAndRule(s));
+                            if (s[0] == '[')
+                                Comparator(ParseConditionAndRule(s));
+                            
                         }
                         catch (Exception)
                         {
