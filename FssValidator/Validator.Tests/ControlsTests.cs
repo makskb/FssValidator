@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml.Linq;
 using RosstatValidator;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static RosstatValidator.Settings;
 using static RosstatValidator.TemplateStructure;
 using static Validator.Tests.Settings;
 
@@ -14,10 +15,9 @@ namespace Validator.Tests
     [TestClass]
     public class ControlsTests
     {
-        /*static void Main()
-        {
-            GetNumberStructure();
-        }*/
+        private static readonly XDocument template = XDocument.Load(TemplatePath + @"..\..\..\resources\template1.xml");
+        private static readonly List<Section> StructureSections = new TemplateStructure().ReadStructure(template);
+
         [TestMethod]
         public void GetNumberStructure()
         {
@@ -30,12 +30,11 @@ namespace Validator.Tests
                     Rows =
                         new List<Row>()
                         {
-                            new Row {NumberRow = 0, Cells = new List<Col>() {}},
                             new Row {NumberRow = 1, Cells = new List<Col>() {new Col() {NumberCell = 3}}},
                             new Row
                             {
                                 NumberRow = 2,
-                                Cells = new List<Col>() {new Col() {NumberCell = 3}, new Col() {NumberCell = 4}, new Col() {NumberCell = 5}, new Col() {NumberCell = 6}, new Col() {NumberCell = 0}, new Col() {NumberCell = 1561616161 } }
+                                Cells = new List<Col>() {new Col() {NumberCell = 3}, new Col() {NumberCell = 4} }
                             },
                             new Row {NumberRow = 3, Cells = new List<Col>() {new Col() {NumberCell = 3}}}
                         }
@@ -46,51 +45,43 @@ namespace Validator.Tests
                     Rows =
                         new List<Row>()
                         {
-                            new Row {NumberRow = 0, Cells = new List<Col> {}},
-                            new Row {NumberRow = 0, Cells = new List<Col> {}},
                             new Row {NumberRow = 30, Cells = new List<Col> {new Col() {NumberCell = 3}, new Col {NumberCell = 4}}},
                             new Row {NumberRow = 31, Cells = new List<Col> {new Col() {NumberCell = 3}, new Col {NumberCell = 4}}}
                         }
                 }
                 #endregion
             };
-            
-            var xml = new XDocument();
-            xml = XDocument.Load(TemplatePath + "template1.xml");
-            var properties = new TemplateStructure();
-            var str = properties.ReadStructure(xml);
-            #region
-            /*foreach (var section in listGood)
-            {
-                Console.WriteLine("раздел" + section.NumberSection);
-                foreach (var row in section.Rows)
-                {
-                    Console.WriteLine("row" + row.NumberRow);
-                    foreach (var cell in row.Cells)
-                    {
-                        Console.WriteLine("cell" + cell.NumberCell);
-                    }
-                }
-            }
-
-            foreach (var section in str)
-            {
-                Console.WriteLine("раздел" + section.NumberSection);
-                foreach (var row in section.Rows)
-                {
-                    Console.WriteLine("row" + row.NumberRow);
-                    foreach (var cell in row.Cells)
-                    {
-                        Console.WriteLine("cell" + cell.NumberCell);
-                    }
-                }
-            }
-            Console.ReadKey();*/
-            #endregion
-            Assert.AreEqual(str.Count, listGood.Count);
-            var firstRow = str.Where(x => x.NumberSection == 1).Select(z => z.Rows.Select(y=>y.NumberRow).First());
-            var firstRow2 = listGood.Where(x => x.NumberSection == 1).Select(z => z.Rows.Select(y=>y.NumberRow).First());
+            //ожидаю увидеть section.count == 2
+            Assert.AreEqual(StructureSections.Count, listGood.Count);
+            var firstRow = StructureSections.Where(x => x.NumberSection == 2).Select(z => z.Rows.Select(y=>y.NumberRow).First());
+            var firstRow2 = listGood.Where(x => x.NumberSection == 2).Select(z => z.Rows.Select(y=>y.NumberRow).First());
+            //ожидаю получить во второй секции первый row с номером 30
             Assert.AreEqual(firstRow2.First(), firstRow.First());
+        }
+        [TestMethod]
+        public void CheckDash()
+        {
+            var str = "1-6,45,2";
+            var result = ControlsValidator.Dash(str);
+            var assertString = "1,2,3,4,5,6,45,2";
+            Assert.AreEqual(assertString, result);
+        }
+        [TestMethod]
+        public void CheckStarHandler()
+        {
+            var str = "[1][15][6][4]";
+            var result = ControlsValidator.StarHandler(str);
+            var assertString = "[1][15][6]";
+            Assert.AreEqual(assertString, result);
+        }
+        [TestMethod]
+        public void CheckStarHandlerWithStar()
+        {
+            SectionsList = StructureSections;
+            var str = "[1][*][3][4]";
+            var result = ControlsValidator.StarHandler(str);
+            var assertString = "[1][1,2,3][3]";
+            Assert.AreEqual(assertString, result);
         }
     }
 }

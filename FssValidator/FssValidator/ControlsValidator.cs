@@ -8,12 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using static System.String;
 using static RosstatValidator.Settings;
 
 namespace RosstatValidator
 
 {
-    class ControlsValidator
+    public class ControlsValidator
     {
         public static void ParseControls(XDocument template)
         {
@@ -22,17 +23,16 @@ namespace RosstatValidator
             foreach (var control in controlsList)
             {
                 LogEvent.Write("Валидируем контроль с id=" + control.Attribute("id").Value);
-                var currentRule = control.Attribute("condition").Value;
+                var currentRule = control.Attribute("rule").Value + control.Attribute("condition").Value;
                 if (currentRule.Trim() != "")
                 {
-                    var conditionCollector = currentRule.Split(new char[] { '{', '}' });
+                    var conditionCollector = currentRule.Split(new char[] {'{', '}'});
                     foreach (var s in conditionCollector)
                     {
                         try
                         {
-                            if (s[0] == '[')
-                                Comparator(ParseConditionAndRule(s));
-                            
+                            var result = StarHandler(s);
+                            Comparator(ParseConditionAndRule(result));
                         }
                         catch (Exception)
                         {
@@ -63,15 +63,29 @@ namespace RosstatValidator
                     var currentRow = currentSection.Rows.Where(x => x.NumberRow == row).FirstOrDefault();
                     if (currentRow == null)
                     {
-                        LogEvent.Write("ERROR! Номера row " + row + " не существует в секции №" + currentSection.NumberSection);
+                        LogEvent.Write("ERROR! Номера row " + row + " не существует в секции №" +
+                                       currentSection.NumberSection);
                     } // если row существует, то проверяем cells в ней
                     else
                     {
-                        var numberCellsInControl = parseCondition[2].Select(x => x.Value).ToList();
-                        foreach (var cell in numberCellsInControl.Where(cell => !currentRow.Cells.Select(x => x.NumberCell).ToList().Contains(cell)))
+                        //если cells по какой то причине не получилось получить, например была *, то продолжаем при исключений проверяить все row не падая
+                        try
                         {
-                            LogEvent.Write("ERROR! Номера cell " + cell + " не существует в row №" + currentRow.NumberRow + " в секции №" + currentSection.NumberSection);
+                            var numberCellsInControl = parseCondition[2].Select(x => x.Value).ToList();
+                            foreach (var cell in numberCellsInControl)
+                            {
+                                if (!currentRow.Cells.Select(x => x.NumberCell).ToList().Contains(cell))
+                                {
+                                    LogEvent.Write("ERROR! Номера cell " + cell + " не существует в row №" +
+                                                   currentRow.NumberRow + " в секции №" + currentSection.NumberSection);
+                                }
+                            }
                         }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
+                        
                     }
                 }
             }
@@ -81,7 +95,7 @@ namespace RosstatValidator
         protected static List<IEnumerable<int?>> ParseConditionAndRule(string ruleOrCondition)
         {
             var separator = new[] {'[', ']'};
-            var s =  ruleOrCondition.Split(separator).Select(x =>
+            var s = ruleOrCondition.Split(separator).Select(x =>
             {
                 if (x.Contains('-'))
                     return Dash(x); //дописываем перечисления, если строка содержит -
@@ -93,8 +107,8 @@ namespace RosstatValidator
                     var isInt = int.TryParse(y, out value);
                     if (isInt) return value;
                     else return null as int?;
-                }))//выбираем intы
-                .Where(x => x.All(y => y.HasValue))//выбираем листы с intами
+                })) //выбираем intы
+                .Where(x => x.All(y => y.HasValue)) //выбираем листы с intами
                 .ToList();
             return s;
         }
@@ -103,8 +117,9 @@ namespace RosstatValidator
         public static string Dash(string str)
         {
             var listAll = str.Split(',').ToList();
-            var listWithDash = listAll.Where(x => x.Contains('-')).ToList();//отделяем строки, содержащие -
-            var listWhithoutDash = listAll.Where(x=>!x.Contains('-')).ToList().Select(x=>x + ",").ToList(); //строки, не содержащие -
+            var listWithDash = listAll.Where(x => x.Contains('-')).ToList(); //отделяем строки, содержащие -
+            var listWhithoutDash = listAll.Where(x => !x.Contains('-')).ToList().Select(x => x + ",").ToList();
+                //строки, не содержащие -
             var listResult = new List<string>();
             //каждую строку с '-' обрабатываем, и записываем в итоговый лист
             foreach (var list in listWithDash)
@@ -122,8 +137,29 @@ namespace RosstatValidator
             //объединяем все значения
             listResult.AddRange(listWhithoutDash);
             //записываем все значения в строку
-            string resultStr = listResult.Aggregate<string, string>(null, (current, s) => current + s);
+            var resultStr = listResult.Aggregate<string, string>(null, (current, s) => current + s);
             return resultStr.Substring(0, resultStr.Length - 1); // удаляем последнюю ',' и возвращяем значение
+        }
+
+        //обработчик со *. По сути обрабатывает только случай, когда row *, остальные случаи просто возвращает
+        public static string StarHandler(string str)
+        {
+            var massStr = str.Split(new char[] {'[', ']'}).Where(x => x != "").ToArray();
+            var indexStar = massStr.IndexOfContains('*');
+            //обрабатывается случай, когда row *, например {[1][*][5,6,7]} - допишет все row в 1 section
+            if (indexStar.Length == 1 && indexStar[0] == 1)
+            {
+                string allRow = null;
+                var currentSection = SectionsList.Where(x => x.NumberSection == massStr[0].ToInt()).First();
+                foreach (var row in currentSection.Rows)
+                {
+                    allRow += row.NumberRow + ",";
+                }
+                massStr[1] = allRow.Substring(0, allRow.Length - 1);
+
+                return $"[{massStr[0]}][{massStr[1]}][{massStr[2]}]";
+            }
+            return $"[{massStr[0]}][{massStr[1]}][{massStr[2]}]";
         }
     }
 }

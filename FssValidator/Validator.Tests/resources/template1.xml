@@ -12,6 +12,9 @@
         <column code="3" type="Z" name="«0» - метка не уcтановлена | «1» - метка установлена">
           <default-cell column="3" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
         </column>
+        <column code="4" type="Z" name="«0» - метка не уcтановлена | «1» - метка установлена">
+          <default-cell column="4" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
+        </column>
       </columns>
       <rows>
         <row code="" type="C" name="Раздел 1." />
@@ -21,10 +24,6 @@
         <row code="02" type="F" name="Повышение качества жизни людей пожилого возраста">
           <cell column="3" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
           <cell column="4" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
-          <cell column="5" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
-          <cell column="6" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
-          <cell column="С" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
-          <cell column="1561616161" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />
         </row>
         <row code="03" type="F" name="Социальная адаптация инвалидов и их семей">
           <cell column="3" dic="s_metka" format="N(15,0)" inputType="2" vldType="1" />

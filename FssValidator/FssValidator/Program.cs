@@ -19,18 +19,6 @@ namespace RosstatValidator
                     SectionsList = str.ReadStructure(Template);
                     ControlsValidator.ParseControls(Template);
                     DictionariesValidator.CheckDictionaries(Template);
-                    foreach (var section in SectionsList)
-                    {
-                        Console.WriteLine(section.NumberSection);
-                        foreach (var row in section.Rows)
-                        {
-                            Console.WriteLine("    " + row.NumberRow);
-                            foreach (var cell in row.Cells)
-                            {
-                                Console.WriteLine("        " + cell.NumberCell);
-                            }
-                        }
-                    }
                 }
             }
             catch (Exception)
