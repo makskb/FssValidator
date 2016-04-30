@@ -4,46 +4,46 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static RosstatValidator.Settings;
 
 namespace RosstatValidator
 {
     class DictionariesValidator
     {
-        static readonly List<string> Diction = new List<string>(); //список справочников
-        static readonly List<string> DicFilter = new List<string>(); //список фильтров справочников
-
-        //метод для получения списки имен справочников и фильтров
-        public static void ParseDic(XDocument xml)
+        private static List<string> Diction
         {
-            var Dictionaries = xml.Root.Element("dics").Descendants("dic");
-            foreach (var dictionary in Dictionaries.Where(e => e.Attributes("parent").Any()))
-                DicFilter.Add(dictionary.Attribute("id").Value);
-
-            foreach (var dictionary in Dictionaries.Where(e => !e.Attributes("parent").Any()))
-                Diction.Add(dictionary.Attribute("id").Value);
+            get
+            {
+                var dictionaries = Template.Root.Element("dics").Descendants("dic");
+                return dictionaries.Where(e => !e.Attributes("parent").Any()).Select(dictionary => dictionary.Attribute("id").Value).ToList();
+            }
+        }
+        private static List<string> DicFilter
+        {
+            get
+            {
+                var dictionaries = Template.Root.Element("dics").Descendants("dic");
+                return dictionaries.Where(e => e.Attributes("parent").Any()).Select(dictionary => dictionary.Attribute("id").Value).ToList();
+            }
         }
 
         //проверка наличия всех справочников и фильтров
-        public static List<string> CheckDictionaries(XDocument template)
+        public static void CheckDictionaries(XDocument template)
         {
-            ParseDic(template); 
             LogEvent.Write("Начинаем проверку справочников");
-            var name = template.Root.Attribute("name").Value;
-            var list = new List<string>();
             var listNeedDic = MakeNeedDictionaries(template);
-            var listNeedFDic = MakeNeedFilterDictionaries(template);
+            var listNeedFilterDic = MakeNeedFilterDictionaries(template);
             foreach (var dic in listNeedDic.Where(dic => !Diction.Contains(dic)))
-                LogEvent.Write("Справочник " + dic + " отсутствует в шаблоне " + name);
-            foreach (var dic in listNeedFDic.Where(dic => !DicFilter.Contains(dic)))
-                LogEvent.Write("Фильтр справочника " + dic + " отсутствует в шаблоне " + name);
-            return list;
+                LogEvent.Write("Справочник " + dic + " отсутствует в шаблоне");
+            foreach (var dic in listNeedFilterDic.Where(dic => !DicFilter.Contains(dic)))
+                LogEvent.Write("Фильтр справочника " + dic + " отсутствует в шаблоне");
+            LogEvent.Write("Закончили проверки справочников");
         }
-
         //получание названия всех справоников, которые нужны в разделах
         public static List<string> MakeNeedDictionaries(XDocument template)
         {
             var listNeedDic = new List<string>();
-            var needDic = template.Root.Elements().Descendants().Attributes("dic");
+            var needDic = template.Root.Element("sections").Descendants().Attributes("dic");
             foreach (var dic in needDic.Where(dic => !listNeedDic.Contains(dic.Value)))
                 listNeedDic.Add(dic.Value);
             return listNeedDic;

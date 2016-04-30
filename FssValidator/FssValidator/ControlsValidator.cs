@@ -141,7 +141,7 @@ namespace RosstatValidator
             return resultStr.Substring(0, resultStr.Length - 1); // удаляем последнюю ',' и возвращяем значение
         }
 
-        //обработчик со *. По сути обрабатывает только случай, когда row *, остальные случаи просто возвращает
+        //обработчик со *. По сути обрабатывает только случай, когда row *, в остальных случаях возвращает первые 3 перечисления
         public static string StarHandler(string str)
         {
             var massStr = str.Split(new char[] {'[', ']'}).Where(x => x != "").ToArray();

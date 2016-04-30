@@ -17,8 +17,8 @@ namespace RosstatValidator
 
         private static void Record(string str)
         {
-            DateTime time = DateTime.Now;
-            StreamWriter file = new StreamWriter("log.txt", true, Encoding.Default);
+            var time = DateTime.Now;
+            var file = new StreamWriter("log.txt", true, Encoding.Default);
             file.WriteLine(time + " " + str);
             file.Close();
         }
